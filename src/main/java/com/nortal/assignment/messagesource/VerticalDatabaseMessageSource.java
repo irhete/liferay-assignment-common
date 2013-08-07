@@ -8,6 +8,8 @@ import javax.annotation.Resource;
 
 import org.springframework.context.support.AbstractMessageSource;
 
+import com.nortal.assignment.messagesource.data.TranslationDAO;
+
 public class VerticalDatabaseMessageSource extends AbstractMessageSource {
 
 	private Messages messages;
