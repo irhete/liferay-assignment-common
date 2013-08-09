@@ -1,6 +1,8 @@
 package com.nortal.assignment.messagesource.model;
 
-public class Translation {
+import java.io.Serializable;
+
+public class Translation implements Serializable {
 
 	private String locale;
 	private String key;

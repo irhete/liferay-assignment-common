@@ -1,24 +1,22 @@
 package com.nortal.assignment.messagesource.data;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import org.springframework.dao.DataAccessException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Repository;
 
-import com.nortal.assignment.messagesource.Messages;
 import com.nortal.assignment.messagesource.model.Translation;
 
 @SuppressWarnings({ "deprecation" })
@@ -47,6 +45,7 @@ public class TranslationDAOImpl implements TranslationDAO {
 		jdbcTemplate = new SimpleJdbcTemplate(dataSource);
 	}
 
+	@CacheEvict(value = "retrieveMessage", allEntries = true)
 	public void insert(final Translation translation)
 			throws DuplicateKeyException {
 		final String sql = "INSERT INTO translation "
@@ -64,6 +63,7 @@ public class TranslationDAOImpl implements TranslationDAO {
 		return translations;
 	}
 
+	@CacheEvict(value = "retrieveMessage", allEntries = true)
 	public void updateTranslation(Translation translation) {
 		final String sql = "UPDATE translation SET value = :value, key = :key WHERE id = :id";
 		SqlParameterSource parameters = new BeanPropertySqlParameterSource(
@@ -71,28 +71,26 @@ public class TranslationDAOImpl implements TranslationDAO {
 		jdbcTemplate.update(sql, parameters);
 	}
 
+	@CacheEvict(value = "retrieveMessage", allEntries = true)
 	public void deleteTranslation(int translationId) {
 		final String sql = "DELETE FROM translation WHERE id = :translationId";
 		jdbcTemplate.update(sql, translationId);
 	}
 
-	public Messages getMessages() {
-		final String sql = "SELECT l.locale, t.key, t.value FROM translation t JOIN language l ON l.id = t.language";
-		return jdbcTemplate.getJdbcOperations().query(sql,
-				new ResultSetExtractor<Messages>() {
-
-					public Messages extractData(ResultSet rs)
-							throws SQLException, DataAccessException {
-
-						Messages messages = new Messages();
-						while (rs.next()) {
-							Locale locale = new Locale(rs.getString("locale"));
-							messages.addMessage(rs.getString("key"), locale,
-									rs.getString("value"));
-						}
-						return messages;
-					}
-				});
-
+	@Override
+	@Cacheable("retrieveMessage")
+	public String getMessage(String code, Locale locale) {
+		final String sql = "SELECT t.value FROM translation t JOIN language l ON l.id = t.language WHERE t.key = :code AND l.locale = :locale";
+		try {
+			return jdbcTemplate.queryForObject(sql, String.class, code,
+					locale.toString());
+		} catch (EmptyResultDataAccessException e) {
+			try {
+				return jdbcTemplate.queryForObject(sql, String.class, code,
+						"en_US");
+			} catch (EmptyResultDataAccessException e2) {
+				return null;
+			}
+		}
 	}
 }

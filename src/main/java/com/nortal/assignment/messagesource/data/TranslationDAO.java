@@ -1,12 +1,11 @@
 package com.nortal.assignment.messagesource.data;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.dao.DuplicateKeyException;
 
-import com.nortal.assignment.messagesource.Messages;
 import com.nortal.assignment.messagesource.model.Translation;
-
 
 /**
  * Services for adding and retrieving translations
@@ -49,5 +48,5 @@ public interface TranslationDAO {
 	 */
 	public void deleteTranslation(int translationId);
 
-	public Messages getMessages();
+	public String getMessage(String code, Locale locale);
 }
