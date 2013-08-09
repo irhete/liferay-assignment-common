@@ -15,7 +15,7 @@ public class VerticalDatabaseMessageSource extends AbstractMessageSource {
 	private TranslationDAO translationDAO;
 
 	@Override
-	protected MessageFormat resolveCode(String code, Locale locale) {
+	public MessageFormat resolveCode(String code, Locale locale) {
 		String msg = translationDAO.getMessage(code, locale);
 		return createMessageFormat(msg, locale);
 	}

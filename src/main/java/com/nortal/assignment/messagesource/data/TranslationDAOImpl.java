@@ -80,14 +80,14 @@ public class TranslationDAOImpl implements TranslationDAO {
 	@Override
 	@Cacheable("retrieveMessage")
 	public String getMessage(String code, Locale locale) {
-		final String sql = "SELECT t.value FROM translation t JOIN language l ON l.id = t.language WHERE t.key = :code AND l.locale = :locale";
+		final String sql = "SELECT t.value FROM translation t JOIN language l ON l.id = t.language WHERE t.key = :code AND LOWER(l.locale) = :locale";
 		try {
-			return jdbcTemplate.queryForObject(sql, String.class, code,
-					locale.toString());
+			return jdbcTemplate.queryForObject(sql, String.class, code, locale
+					.toString().toLowerCase());
 		} catch (EmptyResultDataAccessException e) {
 			try {
 				return jdbcTemplate.queryForObject(sql, String.class, code,
-						"en_US");
+						"en_us");
 			} catch (EmptyResultDataAccessException e2) {
 				return null;
 			}

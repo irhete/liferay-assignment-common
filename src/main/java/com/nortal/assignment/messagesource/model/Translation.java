@@ -54,7 +54,7 @@ public class Translation implements Serializable {
 			return false;
 		}
 		Translation t1 = (Translation) other;
-		return t1.locale.equals(locale) && t1.key.equals(key)
+		return t1.id == id && t1.locale.equals(locale) && t1.key.equals(key)
 				&& t1.value.equals(value);
 	}
 
